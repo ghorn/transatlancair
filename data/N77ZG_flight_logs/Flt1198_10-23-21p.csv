@@ -1,0 +1,22 @@
+Electronics International Inc.
+MVP-50T  Flight Data Recording
+Aircraft ID: N746LG   
+Hardware ID: 1.3.1
+Software Version: 2.7
+SW Tracking ID #: 502
+Unit ID: 1712329445
+Engine Data Converter Model: EDC-T-1-F  
+Flight Number: 1198
+Local Time: 10/23/21 18:14:53
+Date Format: mm/dd/yy
+ZULU Time: 01:14:55
+Engine Hours: 1136.80 Hours
+Cycle Count: 505 Cycles
+Data Logging Interval:   1 sec
+TIME,MSTR_WRN,N1;%,N2;RPM,F.FLOW;GPH,FUEL R;GAL,FUEL L;GAL,VOLTS;V,AMPS;A,TORQ;%,FUEL P;PSI,OIL P;PSI,PR ALT;FT,VSI;FT,AIRSPD;KTS,TAS;,ITT;*C,OIL T;*C,OAT;*F,HP;%,F.REM;GAL,FLT TM;MIN,ENG HRS:HRS,CYCLES; ,GPS-UTC,GPS-WAYPT,GPS-LAT,GPS-LONG,GPS-SPEED;KTS,GPS-ALT;F,GPS-TRACK;DEG,GPS-QLTY,GPS-NumSat,AUXIN1,AUXIN2,AUXIN3,
+18:14:48,0,0.0,0,0.0,32.5,35.0,25.8,0,0,0.0,0.0,148,0,0,0,22,22,70,0,69.6,0,1136.80,505,00,N/A,-----,-----,---,----,----,0,0,0,0,0,
+18:14:49,0,0.0,0,0.0,32.5,35.0,25.8,0,0,0.0,0.0,148,0,0,0,22,22,70,0,69.6,0,1136.80,505,00,N/A,-----,-----,---,----,----,0,0,0,0,0,
+18:14:50,0,0.0,0,0.0,32.5,35.0,25.8,0,0,0.0,0.0,147,0,0,0,22,22,70,0,69.6,0,1136.80,505,00,N/A,-----,-----,---,----,----,0,0,0,0,0,
+18:14:51,0,0.0,0,0.0,32.5,35.0,25.7,0,0,0.0,0.0,147,0,0,0,22,22,70,0,69.6,0,1136.80,505,00,N/A,-----,-----,---,----,----,0,0,0,0,0,
+18:14:52,0,0.0,0,0.0,32.5,35.0,25.6,0,0,0.0,0.0,147,-1,0,0,22,22,70,0,69.6,0,1136.80,505,00,N/A,-----,-----,---,----,----,0,0,0,0,0,
+18:14:53,0,0.0,0,0.0,32.5,35.0,25.7,0,0,0.0,0.0,147,-2,0,0,22,22,70,0,69.6,0,1136.80,505,00,N/A,-----,-----,---,----,----,0,0,0,0,0,
