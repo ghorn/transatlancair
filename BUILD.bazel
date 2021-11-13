@@ -1,0 +1,62 @@
+load("@transatlancair//:pad_string.bzl", "pad")
+
+north_range = range(24,72)
+max_east = 39
+max_west = 135
+
+coords = ["N{n}_00_W{w}_00".format(n=pad(n,2), w=pad(w,3)) for n in north_range for w in range(1, max_west)] + \
+         ["N{n}_00_E{e}_00".format(n=pad(n,2), e=pad(e,3)) for n in north_range for e in range(0, max_east)]
+
+# the dems downloaded from AWS
+filegroup(
+    name = "copernicus_dems",
+    srcs =  glob([
+        "data/dem/COP90_hh/Copernicus_DSM_COG_30_{coord}_DEM.tif".format(coord=coord)
+        for coord in coords
+    ]),
+)
+
+# merge into one tile
+genrule(
+    name = "merged_geotiff_dem",
+    srcs = [":copernicus_dems"],
+    outs = ["merged.tif"],
+    cmd = "gdal_merge.py -o $@ $(SRCS)"
+)
+
+# merge into one tile (small version)
+genrule(
+    name = "merged_geotiff_dem_small",
+    srcs = [":merged_geotiff_dem"],
+    outs = ["merged_small.tif"],
+    #cmd = "gdal_translate -outsize 2% 0 -r cubic $< $@"
+    cmd = "gdal_translate -outsize 5% 0 -r cubic $< $@"
+    #cmd = "gdal_translate -outsize 10% 0 -r cubic $< $@"
+)
+
+genrule(
+    name = "png_dem",
+    srcs = [
+        ":merged_geotiff_dem_small",
+    ],
+    outs = [
+        "dem.png",
+    ],
+    cmd = """\
+gdal_translate -of PNG -ot UInt16 -scale -430 4800 0 65535 $< $@
+du -hs $@
+""",
+)
+
+genrule(
+    name = "stl",
+    srcs = [":dem.png"],
+    outs = ["merged.stl"],
+    cmd = """\
+$(location @hmm//:hmm) $< $@ --level --zscale 200 --triangles 2000000 --blur 4 --gamma 0.2
+du -hs $@
+""",
+    tools = [
+        "@hmm",
+    ]
+)

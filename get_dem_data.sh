@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 
+# See https://portal.opentopography.org/datasetMetadata?otCollectionID=OT.032021.4326.1
+
 # download all dems
 aws s3 cp s3://raster/COP90/ data/dem --recursive --endpoint-url https://opentopography.s3.sdsc.edu --no-sign-request
 
-# move the unused ones away
-./move_unused_dems.py
-
-# tile the remaining ones
-gdal_merge.py -o data/dem/merged.tif data/dem/COP90_hh/*.tif
+# sync
+#aws s3 sync s3://raster/COP90/ data/dem --recursive --endpoint-url https://opentopography.s3.sdsc.edu --no-sign-request
