@@ -60,3 +60,16 @@ du -hs $@
         "@hmm",
     ]
 )
+
+genrule(
+    name = "ellipsoid",
+    srcs = [":merged.stl"],
+    outs = ["ellipsoid.stl"],
+    cmd = """\
+$(location //src/meshtools:llh2ecef) $< $@
+du -hs $@
+""",
+    tools = [
+        "//src/meshtools:llh2ecef",
+    ]
+)
