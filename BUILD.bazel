@@ -89,3 +89,13 @@ py_binary(
     args = ["$(locations :flight_logs)"],
     data = [":flight_logs"]
 )
+
+py_binary(
+    name = "plot_profiles",
+    srcs = [
+        "plot_profiles.py",
+        "load_flights.py",
+    ],
+    args = ["$(locations :flight_logs)"],
+    data = [":flight_logs"]
+)
