@@ -73,3 +73,19 @@ du -hs $@
         "//src/meshtools:llh2ecef",
     ]
 )
+
+# flight logs
+filegroup(
+    name = "flight_logs",
+    srcs = glob(["data/N77ZG_flight_logs/*.csv"]),
+)
+
+py_binary(
+    name = "plot_map",
+    srcs = [
+        "plot_map.py",
+        "load_flights.py",
+    ],
+    args = ["$(locations :flight_logs)"],
+    data = [":flight_logs"]
+)
