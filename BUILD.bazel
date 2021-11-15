@@ -92,18 +92,81 @@ du -hs $@
 )
 
 
+
+
+
+
+# the SF bay topobathy
+filegroup(
+    name = "sftopobathy_geotiff",
+    srcs =  glob(["data/dem/TOPOBATHY_SAN_FRANCISCO_ELEV_METERS/TOPOBATHY_SAN_FRANCISCO_ELEV_METERS.tif"]),
+)
+
+xoff = 35000
+yoff = 25000
+xsize = 1000
+ysize = 1000
+
+ul = (539024,4193364)
+lr = (560096,4177692)
+ulx = ul[0]
+uly = ul[1]
+lrx = lr[0]
+lry = lr[1]
+
+# small version
+genrule(
+    name = "sftopobathy_small",
+    srcs = [":sftopobathy_geotiff"],
+    outs = ["sftopobathy_small.tif"],
+    #cmd = "gdal_translate -outsize 3% 0 -r cubic $< $@"
+    #cmd = "gdal_translate -srcwin {xoff} {yoff} {xsize} {ysize} -outsize {xsize} {ysize} $< $@".format(
+    #    xoff=xoff,
+    #    yoff=yoff,
+    #    xsize=xsize,
+    #    ysize=ysize,
+    #),
+    cmd = "gdal_translate -projwin {ulx} {uly} {lrx} {lry} $< $@".format(
+        ulx=ulx,
+        uly=uly,
+        lrx=lrx,
+        lry=lry,
+    ),
+)
+ul = 539024,4193364
+lr = 560096,4177692
+
+genrule(
+    name = "sftopobathy_png",
+    srcs = [
+        ":sftopobathy_small.tif",
+    ],
+    outs = [
+        "sftopobathy_small.png",
+    ],
+    cmd = """\
+gdal_translate -of PNG -ot UInt16 -scale -2100 1200 0 65535 $< $@
+du -hs $@
+""",
+)
+
+
+
+
 # hmm STL
 genrule(
     name = "hmm_mesh",
     srcs = [
-        ":copernicus_small.png"
+        #":copernicus_small.png"
         #":gebco2021_small.png",
+        "sftopobathy_small.png",
     ],
     outs = [
         "hmm_mesh.stl"
     ],
     cmd = """\
-$(location @hmm//:hmm) $< $@ --level --zscale 200 --triangles 2000000 --blur 4 --gamma 0.2
+#$(location @hmm//:hmm) $< $@ --level --zscale 200 --triangles 2000000 -e 0.001 --blur 4 --gamma 0.2
+$(location @hmm//:hmm) $< $@ --level --zscale 500 --triangles 15000000 -e 0.0001 -b 0.7
 du -hs $@
 """,
     tools = [
