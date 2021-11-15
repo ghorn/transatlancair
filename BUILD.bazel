@@ -18,40 +18,90 @@ filegroup(
 
 # merge into one tile
 genrule(
-    name = "merged_geotiff_dem",
+    name = "copernicus_merged_geotiff",
     srcs = [":copernicus_dems"],
-    outs = ["merged.tif"],
+    outs = ["copernicus.tif"],
     cmd = "gdal_merge.py -o $@ $(SRCS)"
 )
 
-# merge into one tile (small version)
+# small version of the geotiff
 genrule(
-    name = "merged_geotiff_dem_small",
-    srcs = [":merged_geotiff_dem"],
-    outs = ["merged_small.tif"],
-    #cmd = "gdal_translate -outsize 2% 0 -r cubic $< $@"
+    name = "copernicus_small",
+    srcs = [":copernicus.tif"],
+    outs = ["copernicus_small.tif"],
+    #cmd = "gdal_translate -outsize 1% 0 -r cubic $< $@"
     cmd = "gdal_translate -outsize 5% 0 -r cubic $< $@"
     #cmd = "gdal_translate -outsize 10% 0 -r cubic $< $@"
 )
 
 genrule(
-    name = "png_dem",
+    name = "copernicus_small_png",
     srcs = [
-        ":merged_geotiff_dem_small",
+        ":copernicus_small.tif",
     ],
     outs = [
-        "dem.png",
+        "copernicus_small.png",
     ],
     cmd = """\
 gdal_translate -of PNG -ot UInt16 -scale -430 4800 0 65535 $< $@
+#gdal_translate -of PNG -ot Byte -scale -430 4800 0 255 $< $@
 du -hs $@
 """,
 )
 
+
+
+
+
+# the dems downloaded from gebco
+filegroup(
+    name = "gebco2021_dems",
+    srcs =  glob(["data/dem/gebco_2021/*.tif"]),
+)
+
+
+# small version of the geotiff
 genrule(
-    name = "stl",
-    srcs = [":dem.png"],
-    outs = ["merged.stl"],
+    name = "gebco2021_merged_geotiff",
+    srcs = [":gebco2021_dems"],
+    outs = ["gebco2021.tif"],
+    cmd = "gdal_merge.py -o $@ $(SRCS)"
+)
+
+# merge into one tile (small version)
+genrule(
+    name = "gebco2021_small",
+    srcs = [":gebco2021.tif"],
+    outs = ["gebco2021_small.tif"],
+    cmd = "gdal_translate -outsize 3% 0 -r cubic $< $@"
+)
+
+genrule(
+    name = "gebco2021_png",
+    srcs = [
+        ":gebco2021_small.tif",
+    ],
+    outs = [
+        "gebco2021_small.png",
+    ],
+    cmd = """\
+gdal_translate -of PNG -ot UInt16 -scale -11000 8700 0 65535 $< $@
+#gdal_translate -of PNG -ot Byte -scale -11000 8700 0 255 $< $@
+du -hs $@
+""",
+)
+
+
+# hmm STL
+genrule(
+    name = "hmm_mesh",
+    srcs = [
+        ":copernicus_small.png"
+        #":gebco2021_small.png",
+    ],
+    outs = [
+        "hmm_mesh.stl"
+    ],
     cmd = """\
 $(location @hmm//:hmm) $< $@ --level --zscale 200 --triangles 2000000 --blur 4 --gamma 0.2
 du -hs $@
@@ -61,10 +111,37 @@ du -hs $@
     ]
 )
 
+
+
+
+
+# HMSTL STL
+genrule(
+    name = "hmstl_mesh",
+    srcs = [
+        ":copernicus_small.png",
+        #":gebco2021_small.png",
+    ],
+    outs = [
+        "hmstl_mesh.stl"
+    ],
+    cmd = """\
+$(location @hmstl//:hmstl) -i $< -o $@ -z 1 -s
+du -hs $@
+""",
+    tools = [
+        "@hmstl",
+    ]
+)
+
+
 genrule(
     name = "ellipsoid",
-    srcs = [":merged.stl"],
-    outs = ["ellipsoid.stl"],
+    srcs = [
+        ":hmm_mesh.stl",
+        #":hmstl_mesh.stl",
+    ],
+    outs = ["ellipsoid.ply"],
     cmd = """\
 $(location //src/meshtools:llh2ecef) $< $@
 du -hs $@
@@ -80,16 +157,7 @@ filegroup(
     srcs = glob(["data/N77ZG_flight_logs/*.csv"]),
 )
 
-py_binary(
-    name = "plot_map",
-    srcs = [
-        "plot_map.py",
-        "load_flights.py",
-    ],
-    args = ["$(locations :flight_logs)"],
-    data = [":flight_logs"]
-)
-
+# plot flight logs
 py_binary(
     name = "plot_profiles",
     srcs = [
@@ -99,3 +167,22 @@ py_binary(
     args = ["$(locations :flight_logs)"],
     data = [":flight_logs"]
 )
+
+# make a map
+py_binary(
+    name = "plot_map",
+    srcs = [
+        "plot_map.py",
+        "load_flights.py",
+    ],
+    args = [
+        "--gebco2021_path", "$(location :gebco2021_small.tif)",
+        "$(locations :flight_logs)",
+    ],
+    data = [
+        ":flight_logs",
+        ":gebco2021_small.tif",
+        ":gebco2021_small.png",
+    ]
+)
+

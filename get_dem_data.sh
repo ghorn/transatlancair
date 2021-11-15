@@ -7,3 +7,7 @@ aws s3 cp s3://raster/COP90/ data/dem --recursive --endpoint-url https://opentop
 
 # sync
 #aws s3 sync s3://raster/COP90/ data/dem --recursive --endpoint-url https://opentopography.s3.sdsc.edu --no-sign-request
+
+
+
+# other data in https://www.gebco.net/data_and_products/gridded_bathymetry_data
