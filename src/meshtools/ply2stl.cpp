@@ -12,5 +12,5 @@ int main(int argc, char* argv[]) {
   std::vector<glm::vec3> points;
   std::vector<glm::ivec3> triangles;
   LoadPly(input_path, &points, &triangles);
-  SaveBinarySTL(output_path, points, triangles);
+  WriteBinaryStl(output_path, points, triangles);
 }

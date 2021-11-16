@@ -70,6 +70,17 @@ cc_binary(
     deps = [":meshtools"],
 )
 
+# Roundtrip STL for testing purposes.
+cc_binary(
+    name = "roundtrip_stl",
+    srcs = [
+        "roundtrip_stl.cpp",
+    ],
+    copts = cxx_opts,
+    visibility = ["//visibility:public"],
+    deps = [":meshtools"],
+)
+
 # Convert LLH mesh to ECEF.
 cc_binary(
     name = "llh2ecef",

@@ -63,5 +63,5 @@ int32_t main(int32_t argc, char *argv[]) {
   for (glm::vec3 &point : points) {
     llh2ecef(point);
   }
-  SaveBinarySTL(output_path, points, triangles);
+  WriteBinaryStl(output_path, points, triangles);
 }
