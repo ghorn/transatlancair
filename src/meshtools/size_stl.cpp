@@ -14,12 +14,12 @@
 int32_t main(int32_t argc, char *argv[]) {
   // Parse flags.
   if (argc != 4) {
-    fprintf(stderr, "Need 3 command line arguments: input, output, scale.\n");
+    fprintf(stderr, "Need 3 command line arguments: input, output, target size.\n");
     exit(1);
   }
   const std::string input_path = argv[1];
   const std::string output_path = argv[2];
-  const float scale_factor = static_cast<float>(atof(argv[3]));
+  const double target_size = atof(argv[3]);
   assert(input_path.size() != 0);
   assert(output_path.size() != 0);
 
@@ -28,6 +28,27 @@ int32_t main(int32_t argc, char *argv[]) {
   std::vector<glm::ivec3> triangles;
   ReadBinarySTL(input_path, vertices, triangles);
   std::cerr << "Loaded " << vertices.size() << " vertices and " << triangles.size() << " triangles from file." << std::endl;
+
+  if (vertices.size() == 0) {
+    std::cout << "No vertices in this mesh." << std::endl;
+    std::exit(0);
+  }
+
+  // Compute min and max coordinates.
+  double min_x = vertices.at(0).x;
+  double max_x = vertices.at(0).x;
+  double min_y = vertices.at(0).y;
+  double max_y = vertices.at(0).y;
+  for (const glm::vec3 &vertex : vertices) {
+    min_x = fmin(min_x, vertex.x);
+    max_x = fmax(max_x, vertex.x);
+
+    min_y = fmin(min_y, vertex.y);
+    max_y = fmax(max_y, vertex.y);
+  }
+
+  const double max_dimension = fmax(max_x - min_x, max_y - min_y);
+  const float scale_factor = static_cast<float>(target_size / max_dimension);
 
   // Translate vertices.
   for (glm::vec3 &vertex : vertices) {

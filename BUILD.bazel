@@ -22,7 +22,8 @@ topos = {
         "region_of_interest": {"ul": (539024,4193364), "lr": (560096,4177692)},
         #"resize_args": "-outsize 5% 0 -r cubic",
         "contour_level": 0.,
-        "hmm_args": "--triangles 10000000 -e 0.0001 -b 0.7",
+        "hmm_args": "--triangles 1000000 -e 0.0001 -b 0.7",
+        "target_size": 9,
     },
     "measures_greenland": {
         "dems": glob(["data/dem/measures_greenland/*/*/tile*fit*dem*.tif"]),

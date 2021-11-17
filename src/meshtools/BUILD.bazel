@@ -81,7 +81,18 @@ cc_binary(
     deps = [":meshtools"],
 )
 
-# Translate vertices so that mesh is scaled.
+# Scale mesh to a certain size.
+cc_binary(
+    name = "size_stl",
+    srcs = [
+        "size_stl.cpp",
+    ],
+    copts = cxx_opts,
+    visibility = ["//visibility:public"],
+    deps = [":meshtools"],
+)
+
+# Scale mesh by a factor.
 cc_binary(
     name = "scale_stl",
     srcs = [
@@ -92,7 +103,7 @@ cc_binary(
     deps = [":meshtools"],
 )
 
-# Translate vertices so that mesh is scaled.
+# Print dimensions of mesh.
 cc_binary(
     name = "print_stl_dimensions",
     srcs = [

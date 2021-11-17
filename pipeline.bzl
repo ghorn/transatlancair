@@ -174,32 +174,31 @@ du -hs $@
     )
 
 
-#    # scale the mesh to user-defined coordinates
-#    if 'output_max_size' in topo:
-#        stl_name = "{name}_stl".format(**topo)
-#        native.genrule(
-#            name = stl_name,
-#            srcs = [
-#                geoscaled_stl_name,
-#                gdalinfo_name,
-#            ],
-#            outs = ["{name}.stl".format(**topo)],
-#            cmd = """\
-## scale mesh
-#$(location //src/meshtools:scale_stl) $(location {geoscaled_stl}) $@ {output_max_size}
-#
-## print new dimensions
-#$(location //src/meshtools:print_stl_dimensions) $@
-#
-## print file size
-#du -hs $@
-#""".format(gdalinfo=gdalinfo_name, unscaled_stl=unscaled_stl_name, **topo),
-#             tools = [
-#                 "//src/meshtools:scale_stl",
-#                 ":zscale",
-#                 "//src/meshtools:print_stl_dimensions",
-#             ]
-#         )
+    # scale the mesh to user-defined coordinates
+    if 'target_size' in topo:
+        stl_name = "{name}_stl".format(**topo)
+        native.genrule(
+            name = stl_name,
+            srcs = [
+                unscaled_stl_name,
+                gdalinfo_name,
+            ],
+            outs = ["{name}.stl".format(**topo)],
+            cmd = """\
+# scale mesh
+$(location //src/meshtools:size_stl) $(location {unscaled_stl}) $@ {target_size}
+
+# print new dimensions
+$(location //src/meshtools:print_stl_dimensions) $@
+
+# print file size
+du -hs $@
+""".format(gdalinfo=gdalinfo_name, unscaled_stl=unscaled_stl_name, **topo),
+             tools = [
+                 "//src/meshtools:size_stl",
+                 "//src/meshtools:print_stl_dimensions",
+             ]
+         )
 
 
     # optionally make a contour
