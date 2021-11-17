@@ -1,218 +1,73 @@
 load("@transatlancair//:pad_string.bzl", "pad")
+load("@transatlancair//:pipeline.bzl", "process_terrains")
 
+py_binary(
+    name="zscale",
+    srcs = ["zscale.py"],
+)
+
+# copernicus coordinates
 north_range = range(24,72)
 max_east = 39
 max_west = 135
-
-coords = ["N{n}_00_W{w}_00".format(n=pad(n,2), w=pad(w,3)) for n in north_range for w in range(1, max_west)] + \
-         ["N{n}_00_E{e}_00".format(n=pad(n,2), e=pad(e,3)) for n in north_range for e in range(0, max_east)]
-
-# the dems downloaded from AWS
-filegroup(
-    name = "copernicus_dems",
-    srcs =  glob([
-        "data/dem/COP90_hh/Copernicus_DSM_COG_30_{coord}_DEM.tif".format(coord=coord)
-        for coord in coords
-    ]),
-)
-
-# merge into one tile
-genrule(
-    name = "copernicus_merged_geotiff",
-    srcs = [":copernicus_dems"],
-    outs = ["copernicus.tif"],
-    cmd = "gdal_merge.py -o $@ $(SRCS)"
-)
-
-# small version of the geotiff
-genrule(
-    name = "copernicus_small",
-    srcs = [":copernicus.tif"],
-    outs = ["copernicus_small.tif"],
-    #cmd = "gdal_translate -outsize 1% 0 -r cubic $< $@"
-    cmd = "gdal_translate -outsize 5% 0 -r cubic $< $@"
-    #cmd = "gdal_translate -outsize 10% 0 -r cubic $< $@"
-)
-
-genrule(
-    name = "copernicus_small_png",
-    srcs = [
-        ":copernicus_small.tif",
-    ],
-    outs = [
-        "copernicus_small.png",
-    ],
-    cmd = """\
-gdal_translate -of PNG -ot UInt16 -scale -430 4800 0 65535 $< $@
-#gdal_translate -of PNG -ot Byte -scale -430 4800 0 255 $< $@
-du -hs $@
-""",
-)
+copernicus_coords = \
+    ["N{n}_00_W{w}_00".format(n=pad(n,2), w=pad(w,3)) for n in north_range for w in range(1, max_west)] + \
+    ["N{n}_00_E{e}_00".format(n=pad(n,2), e=pad(e,3)) for n in north_range for e in range(0, max_east)]
 
 
+# all the topographies to be processed
+topos = {
+    "sfbay_topobathy": {
+        "dems": glob(["data/dem/TOPOBATHY_SAN_FRANCISCO_ELEV_METERS/TOPOBATHY_SAN_FRANCISCO_ELEV_METERS.tif"]),
+        "region_of_interest": {"ul": (539024,4193364), "lr": (560096,4177692)},
+        #"resize_args": "-outsize 5% 0 -r cubic",
+        "contour_level": 0.,
+        "hmm_args": "--triangles 10000000 -e 0.0001 -b 0.7",
+    },
+    "measures_greenland": {
+        "dems": glob(["data/dem/measures_greenland/*/*/tile*fit*dem*.tif"]),
+        # don't shrink, it's fine
+        #"resize_args": "-outsize 5% 0 -r cubic",
+        "contour_level": 0.,
+        #"hmm_args": "--triangles 2000000 -e 0.001 --blur 4 --gamma 0.2"
+        "hmm_args": "--triangles 10000000 -e 0.0001 -b 0.7"
+    },
+    "gebco2021": {
+        "dems": glob(["data/dem/gebco_2021/*.tif"]),
+        "resize_args": "-outsize 3% 0 -r cubic",
+        #"hmm_args": "--triangles 2000000 -e 0.001 --blur 4 --gamma 0.2",
+        "hmm_args": "--triangles 2000000 -e 0.0001 -b 0.7",
+    },
+    "copernicus": {
+        "dems": glob([
+            "data/dem/COP90_hh/Copernicus_DSM_COG_30_{coord}_DEM.tif".format(coord=coord)
+            for coord in copernicus_coords
+        ]),
+        #"resize_args": "-outsize 1% 0 -r cubic",
+        "resize_args": "-outsize 5% 0 -r cubic",
+        #"resize_args": -outsize 10% 0 -r cubic",
+        #"hmm_args": "--triangles 2000000 -e 0.001 --blur 4 --gamma 0.2",
+        "hmm_args": "--triangles 2000000 -e 0.0001 -b 0.7",
+    },
+}
 
+process_terrains(topos)
 
-
-# the dems downloaded from gebco
-filegroup(
-    name = "gebco2021_dems",
-    srcs =  glob(["data/dem/gebco_2021/*.tif"]),
-)
-
-
-# small version of the geotiff
-genrule(
-    name = "gebco2021_merged_geotiff",
-    srcs = [":gebco2021_dems"],
-    outs = ["gebco2021.tif"],
-    cmd = "gdal_merge.py -o $@ $(SRCS)"
-)
-
-# merge into one tile (small version)
-genrule(
-    name = "gebco2021_small",
-    srcs = [":gebco2021.tif"],
-    outs = ["gebco2021_small.tif"],
-    cmd = "gdal_translate -outsize 3% 0 -r cubic $< $@"
-)
-
-genrule(
-    name = "gebco2021_png",
-    srcs = [
-        ":gebco2021_small.tif",
-    ],
-    outs = [
-        "gebco2021_small.png",
-    ],
-    cmd = """\
-gdal_translate -of PNG -ot UInt16 -scale -11000 8700 0 65535 $< $@
-#gdal_translate -of PNG -ot Byte -scale -11000 8700 0 255 $< $@
-du -hs $@
-""",
-)
-
-
-
-
-
-
-# the SF bay topobathy
-filegroup(
-    name = "sftopobathy_geotiff",
-    srcs =  glob(["data/dem/TOPOBATHY_SAN_FRANCISCO_ELEV_METERS/TOPOBATHY_SAN_FRANCISCO_ELEV_METERS.tif"]),
-)
-
-xoff = 35000
-yoff = 25000
-xsize = 1000
-ysize = 1000
-
-ul = (539024,4193364)
-lr = (560096,4177692)
-ulx = ul[0]
-uly = ul[1]
-lrx = lr[0]
-lry = lr[1]
-
-# small version
-genrule(
-    name = "sftopobathy_small",
-    srcs = [":sftopobathy_geotiff"],
-    outs = ["sftopobathy_small.tif"],
-    #cmd = "gdal_translate -outsize 3% 0 -r cubic $< $@"
-    #cmd = "gdal_translate -srcwin {xoff} {yoff} {xsize} {ysize} -outsize {xsize} {ysize} $< $@".format(
-    #    xoff=xoff,
-    #    yoff=yoff,
-    #    xsize=xsize,
-    #    ysize=ysize,
-    #),
-    cmd = "gdal_translate -projwin {ulx} {uly} {lrx} {lry} $< $@".format(
-        ulx=ulx,
-        uly=uly,
-        lrx=lrx,
-        lry=lry,
-    ),
-)
-ul = 539024,4193364
-lr = 560096,4177692
-
-genrule(
-    name = "sftopobathy_png",
-    srcs = [
-        ":sftopobathy_small.tif",
-    ],
-    outs = [
-        "sftopobathy_small.png",
-    ],
-    cmd = """\
-gdal_translate -of PNG -ot UInt16 -scale -2100 1200 0 65535 $< $@
-du -hs $@
-""",
-)
-
-
-
-
-# hmm STL
-genrule(
-    name = "hmm_mesh",
-    srcs = [
-        #":copernicus_small.png"
-        #":gebco2021_small.png",
-        "sftopobathy_small.png",
-    ],
-    outs = [
-        "hmm_mesh.stl"
-    ],
-    cmd = """\
-#$(location @hmm//:hmm) $< $@ --level --zscale 200 --triangles 2000000 -e 0.001 --blur 4 --gamma 0.2
-$(location @hmm//:hmm) $< $@ --level --zscale 500 --triangles 15000000 -e 0.0001 -b 0.7
-du -hs $@
-""",
-    tools = [
-        "@hmm",
-    ]
-)
-
-
-
-
-
-# HMSTL STL
-genrule(
-    name = "hmstl_mesh",
-    srcs = [
-        ":copernicus_small.png",
-        #":gebco2021_small.png",
-    ],
-    outs = [
-        "hmstl_mesh.stl"
-    ],
-    cmd = """\
-$(location @hmstl//:hmstl) -i $< -o $@ -z 1 -s
-du -hs $@
-""",
-    tools = [
-        "@hmstl",
-    ]
-)
-
-
-genrule(
-    name = "ellipsoid",
-    srcs = [
-        ":hmm_mesh.stl",
-        #":hmstl_mesh.stl",
-    ],
-    outs = ["ellipsoid.ply"],
-    cmd = """\
-$(location //src/meshtools:llh2ecef) $< $@
-du -hs $@
-""",
-    tools = [
-        "//src/meshtools:llh2ecef",
-    ]
-)
+## convert to ellipsoid
+#genrule(
+#    name = "ellipsoid",
+#    srcs = [
+#        "copernicus.stl",
+#    ],
+#    outs = ["ellipsoid.ply"],
+#    cmd = """\
+#$(location //src/meshtools:llh2ecef) $< $@
+#du -hs $@
+#""",
+#    tools = [
+#        "//src/meshtools:llh2ecef",
+#    ]
+#)
 
 # flight logs
 filegroup(
@@ -239,13 +94,12 @@ py_binary(
         "load_flights.py",
     ],
     args = [
-        "--gebco2021_path", "$(location :gebco2021_small.tif)",
+        "--gebco2021_path", "$(location :gebco2021_resized.tif)",
         "$(locations :flight_logs)",
     ],
     data = [
         ":flight_logs",
-        ":gebco2021_small.tif",
-        ":gebco2021_small.png",
+        ":gebco2021_resized.tif",
+        ":gebco2021.png",
     ]
 )
-
