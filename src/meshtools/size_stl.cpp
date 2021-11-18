@@ -47,8 +47,9 @@ int32_t main(int32_t argc, char *argv[]) {
     max_y = fmax(max_y, vertex.y);
   }
 
-  const double max_dimension = fmax(max_x - min_x, max_y - min_y);
-  const float scale_factor = static_cast<float>(target_size / max_dimension);
+  // The shortest size determines the size, because wood comes in long boards and the
+  // longest size is assumed to fit.
+  const float scale_factor = static_cast<float>(target_size / fmin(max_x - min_x, max_y - min_y));
 
   // Translate vertices.
   for (glm::vec3 &vertex : vertices) {

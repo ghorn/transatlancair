@@ -176,14 +176,14 @@ du -hs $@
 
     # scale the mesh to user-defined coordinates
     if 'target_size' in topo:
-        stl_name = "{name}_stl".format(**topo)
+        stl_name = "{name}_scaled_to_target_stl".format(**topo)
         native.genrule(
             name = stl_name,
             srcs = [
                 unscaled_stl_name,
                 gdalinfo_name,
             ],
-            outs = ["{name}.stl".format(**topo)],
+            outs = ["{name}_scaled_to_target.stl".format(**topo)],
             cmd = """\
 # scale mesh
 $(location //src/meshtools:size_stl) $(location {unscaled_stl}) $@ {target_size}
