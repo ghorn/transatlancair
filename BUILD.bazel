@@ -19,11 +19,12 @@ copernicus_coords = \
 topos = {
     "sfbay_topobathy": {
         "dems": glob(["data/dem/TOPOBATHY_SAN_FRANCISCO_ELEV_METERS/TOPOBATHY_SAN_FRANCISCO_ELEV_METERS.tif"]),
-        "region_of_interest": {"ul": (539024,4193364), "lr": (560096,4177692)},
+        #"region_of_interest": {"ul": (544049,4193800), "lr": (553362,4182147)},
+        "region_of_interest": {"ul": (538300,4194644), "lr": (558250,4175530)},
         #"resize_args": "-outsize 5% 0 -r cubic",
         "contour_level": 0.,
-        "hmm_args": "--triangles 1000000 -e 0.0001 -b 0.7",
-        "target_size": 9,
+        "hmm_args": "--triangles 1000000 -e 0.0001 -b 0.7",# --border-size 300",
+        "target_size": 10,
     },
     "measures_greenland": {
         "dems": glob(["data/dem/measures_greenland/*/*/tile*fit*dem*.tif"]),
@@ -31,13 +32,15 @@ topos = {
         #"resize_args": "-outsize 5% 0 -r cubic",
         "contour_level": 0.,
         #"hmm_args": "--triangles 2000000 -e 0.001 --blur 4 --gamma 0.2"
-        "hmm_args": "--triangles 10000000 -e 0.0001 -b 0.7"
+        "hmm_args": "--triangles 10000000 -e 0.0001 -b 0.7",
+        "target_size": 10,
     },
     "gebco2021": {
         "dems": glob(["data/dem/gebco_2021/*.tif"]),
         "resize_args": "-outsize 3% 0 -r cubic",
         #"hmm_args": "--triangles 2000000 -e 0.001 --blur 4 --gamma 0.2",
         "hmm_args": "--triangles 2000000 -e 0.0001 -b 0.7",
+        "target_size": 10,
     },
     "copernicus": {
         "dems": glob([
@@ -47,8 +50,9 @@ topos = {
         #"resize_args": "-outsize 1% 0 -r cubic",
         "resize_args": "-outsize 5% 0 -r cubic",
         #"resize_args": -outsize 10% 0 -r cubic",
-        #"hmm_args": "--triangles 2000000 -e 0.001 --blur 4 --gamma 0.2",
-        "hmm_args": "--triangles 2000000 -e 0.0001 -b 0.7",
+        "hmm_args": "--triangles 2000000 -e 0.001 --blur 4 --gamma 0.2",
+        #"hmm_args": "--triangles 2000000 -e 0.0001 -b 0.7",
+        "target_size": 10,
     },
 }
 
