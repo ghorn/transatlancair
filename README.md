@@ -4,7 +4,7 @@ The purpose of this repository is to visualize my recent single-engine Atlantic 
 
 The command 
 
-> ./bazelisk run //:plot_map
+> bazel run //:plot_map
 
 may or may not produce:
 
@@ -19,7 +19,7 @@ I want to make a 3d model of the earth with these tracks overlaid. I'm using htt
 
 ![alt text](https://github.com/ghorn/transatlancair/blob/main/readme/copernicus.png?raw=true)
 
-> ./bazelisk build //...
+> bazel build //...
 
 should produce that and other STLs.
 
